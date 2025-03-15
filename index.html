@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Ball Game</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <style>
+        body {
+            text-align: center;
+            background-color: black;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            font-size: 36px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            
+        }
+        p {
+            font-size: 16px;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+        canvas {
+            background: radial-gradient(circle, #444, #111);
+            display: block;
+            border: 2px solid white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px white;
+        }
+        #restartBtn {
+            display: none;
+            margin: 15px 0;
+            padding: 12px 25px;
+            font-size: 18px;
+            background: linear-gradient(45deg, #007BFF, #00D4FF);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+        }
+        #restartBtn:hover {
+            background: linear-gradient(45deg, #0056b3, #00A2FF);
+            box-shadow: 0 0 20px rgba(0, 123, 255, 1);
+            transform: scale(1.1);
+        }
+        .neon-ball {
+            box-shadow: 0 0 10px red, 0 0 20px red, 0 0 30px red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Catch the Ball</h1>
+    <p>Move the paddle to catch the falling ball and score points. Use the arrow keys or mouse to control the paddle.</p>
+    <button id="restartBtn">Restart</button>
+    <canvas id="gameCanvas" width="400" height="300"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const restartBtn = document.getElementById("restartBtn");
+
+        let paddleWidth = 80;
+        let paddleHeight = 10;
+        let paddleX;
+        let rightPressed = false;
+        let leftPressed = false;
+
+        let ballRadius = 10;
+        let ballX;
+        let ballY;
+        let ballSpeed = 2;
+
+        let score;
+        let gameOver = false;
+
+        function resetGame() {
+            document.querySelector("h1").style.display = "block";
+            paddleX = (canvas.width - paddleWidth) / 2;
+            ballX = Math.random() * (canvas.width - ballRadius * 2) + ballRadius;
+            ballY = 30;
+            score = 0;
+            gameOver = false;
+            restartBtn.style.display = "none";
+            updateGame();
+        }
+
+        document.addEventListener("keydown", keyDownHandler);
+        document.addEventListener("keyup", keyUpHandler);
+        document.addEventListener("mousemove", mouseMoveHandler);
+        restartBtn.addEventListener("click", resetGame);
+
+        function keyDownHandler(e) {
+            if (e.key === "Right" || e.key === "ArrowRight") {
+                rightPressed = true;
+            } else if (e.key === "Left" || e.key === "ArrowLeft") {
+                leftPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if (e.key === "Right" || e.key === "ArrowRight") {
+                rightPressed = false;
+            } else if (e.key === "Left" || e.key === "ArrowLeft") {
+                leftPressed = false;
+            }
+        }
+
+        function mouseMoveHandler(e) {
+            let relativeX = e.clientX - canvas.offsetLeft;
+            if (relativeX > 0 && relativeX < canvas.width) {
+                paddleX = relativeX - paddleWidth / 2;
+            }
+        }
+
+        function drawPaddle() {
+            ctx.fillStyle = "cyan";
+            ctx.fillRect(paddleX, canvas.height - paddleHeight - 10, paddleWidth, paddleHeight);
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = "red";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawScore() {
+            ctx.fillStyle = "white";
+            ctx.font = "18px Arial";
+            ctx.fillText("Score: " + score, 10, 20);
+        }
+
+        function updateGame() {
+            if (gameOver) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPaddle();
+            drawBall();
+            drawScore();
+
+            if (rightPressed && paddleX < canvas.width - paddleWidth) {
+                paddleX += 5;
+            }
+            if (leftPressed && paddleX > 0) {
+                paddleX -= 5;
+            }
+
+            ballY += ballSpeed;
+            if (ballY + ballRadius >= canvas.height - paddleHeight - 10 && ballX > paddleX && ballX < paddleX + paddleWidth) {
+                ballY = 30;
+                ballX = Math.random() * (canvas.width - ballRadius * 2) + ballRadius;
+                score++;
+            }
+            if (ballY > canvas.height) {
+                gameOver = true;
+                restartBtn.style.display = "block";
+                document.querySelector("h1").style.display = "block";
+            } else {
+                requestAnimationFrame(updateGame);
+            }
+        }
+
+        resetGame();
+    </script>
+</body>
+</html>
